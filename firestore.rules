@@ -1,0 +1,293 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidAspectMode(val) {
+      return val is string && val.size() <= 32 && (
+        val == '9:16_full' ||
+        val == '9:16_safe_crop' ||
+        val == '4:5_feed' ||
+        val == '1:1_square'
+      );
+    }
+
+    function isValidCaptionStyle(val) {
+      return val is string && val.size() <= 32 && (
+        val == 'kinetic_bold' ||
+        val == 'minimal_clean' ||
+        val == 'high_contrast_box' ||
+        val == 'none'
+      );
+    }
+
+    // Entity Blueprint 1: SourceShort
+    function isValidSourceShort(data) {
+      return data.keys().hasAll([
+        'ownerId',
+        'youtubeUrl',
+        'youtubeId',
+        'title',
+        'channelName',
+        'durationSec',
+        'aspectMode',
+        'captionStyle',
+        'stripWatermark',
+        'normalizeAudioLufs',
+        'hookText',
+        'xCopy',
+        'reelsCaption',
+        'tiktokCaption',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId',
+        'youtubeUrl',
+        'youtubeId',
+        'title',
+        'channelName',
+        'durationSec',
+        'aspectMode',
+        'captionStyle',
+        'stripWatermark',
+        'normalizeAudioLufs',
+        'hookText',
+        'xCopy',
+        'reelsCaption',
+        'tiktokCaption',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.youtubeUrl is string && data.youtubeUrl.size() >= 5 && data.youtubeUrl.size() <= 200 &&
+      data.youtubeId is string && data.youtubeId.size() >= 3 && data.youtubeId.size() <= 64 && data.youtubeId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+      data.channelName is string && data.channelName.size() >= 1 && data.channelName.size() <= 80 &&
+      data.durationSec is number && data.durationSec >= 1 && data.durationSec <= 180 &&
+      isValidAspectMode(data.aspectMode) &&
+      isValidCaptionStyle(data.captionStyle) &&
+      data.stripWatermark is bool &&
+      data.normalizeAudioLufs is bool &&
+      data.hookText is string && data.hookText.size() >= 0 && data.hookText.size() <= 120 &&
+      data.xCopy is string && data.xCopy.size() >= 1 && data.xCopy.size() <= 280 &&
+      data.reelsCaption is string && data.reelsCaption.size() >= 1 && data.reelsCaption.size() <= 500 &&
+      data.tiktokCaption is string && data.tiktokCaption.size() >= 1 && data.tiktokCaption.size() <= 400 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Entity Blueprint 2: ScheduledPost
+    function isValidScheduledPost(data) {
+      return data.keys().hasAll([
+        'ownerId',
+        'shortId',
+        'shortTitle',
+        'platform',
+        'caption',
+        'scheduledFor',
+        'status',
+        'aspectMode',
+        'autoFirstComment',
+        'viewsCount',
+        'engagementRate',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId',
+        'shortId',
+        'shortTitle',
+        'platform',
+        'caption',
+        'scheduledFor',
+        'status',
+        'aspectMode',
+        'autoFirstComment',
+        'viewsCount',
+        'engagementRate',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.shortId is string && data.shortId.size() >= 1 && data.shortId.size() <= 128 && data.shortId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.shortTitle is string && data.shortTitle.size() >= 1 && data.shortTitle.size() <= 120 &&
+      data.platform is string && data.platform.size() <= 16 && (
+        data.platform == 'x' ||
+        data.platform == 'reels' ||
+        data.platform == 'tiktok'
+      ) &&
+      data.caption is string && data.caption.size() >= 1 && data.caption.size() <= 500 &&
+      data.scheduledFor is string && data.scheduledFor.size() >= 10 && data.scheduledFor.size() <= 40 &&
+      data.status is string && data.status.size() <= 20 && (
+        data.status == 'queued' ||
+        data.status == 'publishing' ||
+        data.status == 'published' ||
+        data.status == 'failed'
+      ) &&
+      isValidAspectMode(data.aspectMode) &&
+      data.autoFirstComment is string && data.autoFirstComment.size() >= 0 && data.autoFirstComment.size() <= 280 &&
+      data.viewsCount is number && data.viewsCount >= 0 && data.viewsCount <= 1000000000 &&
+      data.engagementRate is number && data.engagementRate >= 0 && data.engagementRate <= 100 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Entity Blueprint 3: AutomationRule
+    function isValidAutomationRule(data) {
+      return data.keys().hasAll([
+        'ownerId',
+        'name',
+        'sourceChannel',
+        'targetPlatform',
+        'delayMinutes',
+        'stripWatermark',
+        'autoCaptions',
+        'enabled',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId',
+        'name',
+        'sourceChannel',
+        'targetPlatform',
+        'delayMinutes',
+        'stripWatermark',
+        'autoCaptions',
+        'enabled',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+      data.sourceChannel is string && data.sourceChannel.size() >= 1 && data.sourceChannel.size() <= 80 &&
+      data.targetPlatform is string && data.targetPlatform.size() <= 16 && (
+        data.targetPlatform == 'all' ||
+        data.targetPlatform == 'x' ||
+        data.targetPlatform == 'reels' ||
+        data.targetPlatform == 'tiktok'
+      ) &&
+      data.delayMinutes is number && data.delayMinutes >= 0 && data.delayMinutes <= 10080 &&
+      data.stripWatermark is bool &&
+      data.autoCaptions is bool &&
+      data.enabled is bool &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Collection 1: /shorts/{shortId}
+    match /shorts/{shortId} {
+      allow get: if isSignedIn() && isValidId(shortId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(shortId) && isValidSourceShort(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isSignedIn() && isValidId(shortId) && isValidSourceShort(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title',
+            'aspectMode',
+            'captionStyle',
+            'stripWatermark',
+            'normalizeAudioLufs',
+            'hookText',
+            'xCopy',
+            'reelsCaption',
+            'tiktokCaption',
+            'updatedAt'
+          ])
+        );
+      allow delete: if isSignedIn() && isValidId(shortId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Collection 2: /schedules/{scheduleId}
+    match /schedules/{scheduleId} {
+      allow get: if isSignedIn() && isValidId(scheduleId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(scheduleId) && isValidScheduledPost(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/shorts/$(incoming().shortId)) &&
+        get(/databases/$(database)/documents/shorts/$(incoming().shortId)).data.ownerId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(scheduleId) && isValidScheduledPost(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().shortId == existing().shortId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        existing().status != 'published' && (
+          // Action 1: Reschedule or edit copy while not yet published
+          (incoming().diff(existing()).affectedKeys().hasOnly([
+            'caption',
+            'scheduledFor',
+            'aspectMode',
+            'autoFirstComment',
+            'status',
+            'updatedAt'
+          ])) ||
+          // Action 2: Execute / publish transition and telemetry update
+          (incoming().diff(existing()).affectedKeys().hasOnly([
+            'status',
+            'viewsCount',
+            'engagementRate',
+            'updatedAt'
+          ]))
+        );
+      allow delete: if isSignedIn() && isValidId(scheduleId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Collection 3: /rules/{ruleId}
+    match /rules/{ruleId} {
+      allow get: if isSignedIn() && isValidId(ruleId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(ruleId) && isValidAutomationRule(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isSignedIn() && isValidId(ruleId) && isValidAutomationRule(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'name',
+            'sourceChannel',
+            'targetPlatform',
+            'delayMinutes',
+            'stripWatermark',
+            'autoCaptions',
+            'enabled',
+            'updatedAt'
+          ])
+        );
+      allow delete: if isSignedIn() && isValidId(ruleId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

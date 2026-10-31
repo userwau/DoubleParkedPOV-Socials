@@ -1,0 +1,293 @@
+{
+  "entities": {
+    "SourceShort": {
+      "title": "SourceShort",
+      "description": "A YouTube Short video imported by a creator for repurposing and cross-platform syndication.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the creator who owns this YouTube Short.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "youtubeUrl": {
+          "type": "string",
+          "description": "Original YouTube Shorts URL.",
+          "minLength": 5,
+          "maxLength": 200
+        },
+        "youtubeId": {
+          "type": "string",
+          "description": "11-character or standard YouTube video identifier.",
+          "minLength": 3,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Original or customized title of the YouTube Short.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "channelName": {
+          "type": "string",
+          "description": "Source YouTube channel handle or name.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "durationSec": {
+          "type": "number",
+          "description": "Duration of the short video in seconds (1 to 180)."
+        },
+        "aspectMode": {
+          "type": "string",
+          "description": "Framing and safe-zone crop mode for cross-platform output.",
+          "enum": ["9:16_full", "9:16_safe_crop", "4:5_feed", "1:1_square"]
+        },
+        "captionStyle": {
+          "type": "string",
+          "description": "Burned-in subtitle styling preset.",
+          "enum": ["kinetic_bold", "minimal_clean", "high_contrast_box", "none"]
+        },
+        "stripWatermark": {
+          "type": "boolean",
+          "description": "Whether to strip platform watermarks and clean metadata headers."
+        },
+        "normalizeAudioLufs": {
+          "type": "boolean",
+          "description": "Whether to normalize audio loudness to -14 LUFS broadcast standard."
+        },
+        "hookText": {
+          "type": "string",
+          "description": "Opening 3-second visual hook overlay text.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "xCopy": {
+          "type": "string",
+          "description": "Repurposed post copy optimized for X (Twitter) video posts.",
+          "minLength": 1,
+          "maxLength": 280
+        },
+        "reelsCaption": {
+          "type": "string",
+          "description": "Repurposed caption and hashtag block for Instagram Reels.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "tiktokCaption": {
+          "type": "string",
+          "description": "Repurposed caption and searchable keywords for TikTok.",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the short was imported."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the short was last modified."
+        }
+      },
+      "required": [
+        "ownerId",
+        "youtubeUrl",
+        "youtubeId",
+        "title",
+        "channelName",
+        "durationSec",
+        "aspectMode",
+        "captionStyle",
+        "stripWatermark",
+        "normalizeAudioLufs",
+        "hookText",
+        "xCopy",
+        "reelsCaption",
+        "tiktokCaption",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ScheduledPost": {
+      "title": "ScheduledPost",
+      "description": "A platform-specific scheduled or published video syndication job.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the creator who owns this scheduled job.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "shortId": {
+          "type": "string",
+          "description": "ID of the parent SourceShort document.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "shortTitle": {
+          "type": "string",
+          "description": "Denormalized title of the SourceShort for table display.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "platform": {
+          "type": "string",
+          "description": "Target social video platform.",
+          "enum": ["x", "reels", "tiktok"]
+        },
+        "caption": {
+          "type": "string",
+          "description": "Platform-tailored post copy or caption.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "scheduledFor": {
+          "type": "string",
+          "description": "ISO-8601 date-time string for scheduled execution.",
+          "minLength": 10,
+          "maxLength": 40
+        },
+        "status": {
+          "type": "string",
+          "description": "Current execution state in the publishing pipeline.",
+          "enum": ["queued", "publishing", "published", "failed"]
+        },
+        "aspectMode": {
+          "type": "string",
+          "description": "Target aspect ratio preset.",
+          "enum": ["9:16_full", "9:16_safe_crop", "4:5_feed", "1:1_square"]
+        },
+        "autoFirstComment": {
+          "type": "string",
+          "description": "Automated follow-up reply or first comment with source link.",
+          "minLength": 0,
+          "maxLength": 280
+        },
+        "viewsCount": {
+          "type": "number",
+          "description": "Recorded cross-platform video views."
+        },
+        "engagementRate": {
+          "type": "number",
+          "description": "Engagement rate percentage (0 to 100)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the job was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the job was last updated."
+        }
+      },
+      "required": [
+        "ownerId",
+        "shortId",
+        "shortTitle",
+        "platform",
+        "caption",
+        "scheduledFor",
+        "status",
+        "aspectMode",
+        "autoFirstComment",
+        "viewsCount",
+        "engagementRate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AutomationRule": {
+      "title": "AutomationRule",
+      "description": "An automated cross-platform repurposing and scheduling workflow rule.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the creator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the automation pipeline.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "sourceChannel": {
+          "type": "string",
+          "description": "Source YouTube channel handle or playlist filter.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "targetPlatform": {
+          "type": "string",
+          "description": "Primary destination platform or bundle.",
+          "enum": ["all", "x", "reels", "tiktok"]
+        },
+        "delayMinutes": {
+          "type": "number",
+          "description": "Stagger delay in minutes after YouTube Short detection (0 to 10080)."
+        },
+        "stripWatermark": {
+          "type": "boolean",
+          "description": "Automatically strip YouTube watermark and end-screen cards."
+        },
+        "autoCaptions": {
+          "type": "boolean",
+          "description": "Automatically burn dynamic captions into safe zone."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the automation rule is currently active."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the rule was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the rule was updated."
+        }
+      },
+      "required": [
+        "ownerId",
+        "name",
+        "sourceChannel",
+        "targetPlatform",
+        "delayMinutes",
+        "stripWatermark",
+        "autoCaptions",
+        "enabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/shorts/{shortId}": {
+      "schema": { "$ref": "#/entities/SourceShort" },
+      "description": "Stores imported YouTube Shorts and their repurposed multi-platform presets."
+    },
+    "/schedules/{scheduleId}": {
+      "schema": { "$ref": "#/entities/ScheduledPost" },
+      "description": "Stores scheduled and published syndication jobs for X, Instagram Reels, and TikTok."
+    },
+    "/rules/{ruleId}": {
+      "schema": { "$ref": "#/entities/AutomationRule" },
+      "description": "Stores automated trigger-to-publish rules per creator."
+    }
+  }
+}

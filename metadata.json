@@ -1,0 +1,6 @@
+{
+  "name": "ShortFlow — YouTube Shorts to X, Reels & TikTok Syndicate",
+  "description": "Cross-platform video repurposing, watermark-free transcoding, and automated publishing scheduler for YouTube Shorts to X, Instagram Reels, and TikTok.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
